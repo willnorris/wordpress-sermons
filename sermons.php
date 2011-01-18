@@ -74,30 +74,16 @@ function sermons_register_post_type() {
     'has_archive' => true,
 		'supports' => array('title', 'editor', 'author', 'custom-fields'),
 		'taxonomies' => array('sermon_series', 'sermon_service'),
-		'register_meta_box_cb' => 'sermons_register_meta_box',
 	);
 	register_post_type('sermon', $post_type_args);
+
+
+  // allow sermons to have pings and enclosures
+  add_action('publish_sermon', '_publish_post_hook', 5, 1);
 }
 add_action('init', 'sermons_register_post_type');
 
 
-/**
- * Register meta boxes for the 'sermons' post type.
- */
-function sermons_register_meta_box() {
-	add_meta_box('sermon-audio', __('Sermon Audio', 'sermons'), 'sermons_audio_meta_box', 'sermon');
-}
-
-
-/**
- * Content of the 'sermon audio' meta box.
- */
-function sermons_audio_meta_box( $post ) {
-	echo '
-	<input type="text" name="sermon-audio" />';
-}
-
- 
 /**
  * Get the URL base for sermon permalinks.
  */
@@ -121,6 +107,34 @@ function get_sermon_permalink_base() {
  */
 function is_sermon( $sermon = '' ) {
   return is_singular( 'sermon' ) && is_single( $sermon );
+}
+
+
+/**
+ * Is the query for a specific sermon series?
+ *
+ * If the $series parameter is specified, this function will additionally
+ * check if the query is for one of the series specified.
+ *
+ * @param mixed $series Series ID, title, slug, or array of Series IDs, titles, and slugs.
+ * @return bool
+ */
+function is_sermon_series( $series = '' ) {
+  return is_tax( 'sermon_series', $series );
+}
+
+
+/**
+ * Is the query for a specific sermon service?
+ *
+ * If the $service parameter is specified, this function will additionally
+ * check if the query is for one of the service specified.
+ *
+ * @param mixed $service Service ID, title, slug, or array of Service IDs, titles, and slugs.
+ * @return bool
+ */
+function is_sermon_service( $service = '' ) {
+  return is_tax( 'sermon_service', $service );
 }
 
 
