@@ -17,65 +17,65 @@ require_once dirname(__FILE__) . '/admin.php';
  */
 function sermons_register_post_type() {
 
-	// make sure and register the taxonomies BEFORE the post type because the rewrite slugs overlap
+  // make sure and register the taxonomies BEFORE the post type because the rewrite slugs overlap
 
-	$series_args = array( 
-		'hierarchical' => true, 
-		'labels' => array(
-			'name' => __('Sermon Series', 'sermons'), 
-			'singular_name' => __('Sermon Series', 'sermons'), 
-			'add_new_item' => __('Add New Sermon Series', 'sermons'), 
-			'edit_item' => __('Edit Sermon Series', 'sermons'),
-			'new_item' => __('New Sermon Series', 'sermons'),
-			'view_item' => __('View Sermon Series', 'sermons'),
-			'search_items' => __('Search Sermon Series', 'sermons'),
-			'not_found' => __('No sermon series found', 'sermons'),
-			'not_found_in_trash' => __('No sermon series found in Trash', 'sermons'),
-		),
-		'rewrite' => get_sermon_permalink_base() ? array( 'slug' => get_sermon_permalink_base() . '/series' ) : false,
-	);
-	register_taxonomy( 'sermon_series', '', $series_args );
+  $series_args = array( 
+    'hierarchical' => true, 
+    'labels' => array(
+      'name' => __('Sermon Series', 'sermons'), 
+      'singular_name' => __('Sermon Series', 'sermons'), 
+      'add_new_item' => __('Add New Sermon Series', 'sermons'), 
+      'edit_item' => __('Edit Sermon Series', 'sermons'),
+      'new_item' => __('New Sermon Series', 'sermons'),
+      'view_item' => __('View Sermon Series', 'sermons'),
+      'search_items' => __('Search Sermon Series', 'sermons'),
+      'not_found' => __('No sermon series found', 'sermons'),
+      'not_found_in_trash' => __('No sermon series found in Trash', 'sermons'),
+    ),
+    'rewrite' => get_sermon_permalink_base() ? array( 'slug' => get_sermon_permalink_base() . '/series' ) : false,
+  );
+  register_taxonomy( 'sermon_series', '', $series_args );
 
-	$service_args = array( 
-		'hierarchical' => true, 
-		'labels' => array(
-			'name' => __('Sermon Services', 'sermons'), 
-			'singular_name' => __('Sermon Service', 'sermons'), 
-			'add_new_item' => __('Add New Service', 'sermons'), 
-			'edit_item' => __('Edit Service', 'sermons'),
-			'new_item' => __('New Service', 'sermons'),
-			'view_item' => __('View Service', 'sermons'),
-			'search_items' => __('Search Services', 'sermons'),
-			'not_found' => __('No services found', 'sermons'),
-			'not_found_in_trash' => __('No services found in Trash', 'sermons'),
-		),
-		'rewrite' => get_sermon_permalink_base() ? array( 'slug' => get_sermon_permalink_base() . '/service' ) : false,
-	);
-	register_taxonomy( 'sermon_service', '', $service_args );
+  $service_args = array( 
+    'hierarchical' => true, 
+    'labels' => array(
+      'name' => __('Sermon Services', 'sermons'), 
+      'singular_name' => __('Sermon Service', 'sermons'), 
+      'add_new_item' => __('Add New Service', 'sermons'), 
+      'edit_item' => __('Edit Service', 'sermons'),
+      'new_item' => __('New Service', 'sermons'),
+      'view_item' => __('View Service', 'sermons'),
+      'search_items' => __('Search Services', 'sermons'),
+      'not_found' => __('No services found', 'sermons'),
+      'not_found_in_trash' => __('No services found in Trash', 'sermons'),
+    ),
+    'rewrite' => get_sermon_permalink_base() ? array( 'slug' => get_sermon_permalink_base() . '/service' ) : false,
+  );
+  register_taxonomy( 'sermon_service', '', $service_args );
 
-	// setup custom post type
-	$post_type_args = array(
-		'labels' => array(
-			'name' => __('Sermons', 'sermons'),
-			'singular_name' => __('Sermon', 'sermons'),
-			'add_new_item' => __('Add New Sermon', 'sermons'),
-			'edit_item' => __('Edit Sermon', 'sermons'),
-			'new_item' => __('New Sermon', 'sermons'),
-			'view_item' => __('View Sermon', 'sermons'),
-			'search_items' => __('Search Sermons', 'sermons'),
-			'not_found' => __('No sermons found', 'sermons'),
-			'not_found_in_trash' => __('No sermons found in Trash', 'sermons'),
-		),
-		'public' => true,
-		'show_ui' => true,
-		'capability_type' => 'post',
-		'hierarchical' => false,
-		'rewrite' => get_sermon_permalink_base() ? array( 'slug' => get_sermon_permalink_base(), 'with_front' => true ) : false,
+  // setup custom post type
+  $post_type_args = array(
+    'labels' => array(
+      'name' => __('Sermons', 'sermons'),
+      'singular_name' => __('Sermon', 'sermons'),
+      'add_new_item' => __('Add New Sermon', 'sermons'),
+      'edit_item' => __('Edit Sermon', 'sermons'),
+      'new_item' => __('New Sermon', 'sermons'),
+      'view_item' => __('View Sermon', 'sermons'),
+      'search_items' => __('Search Sermons', 'sermons'),
+      'not_found' => __('No sermons found', 'sermons'),
+      'not_found_in_trash' => __('No sermons found in Trash', 'sermons'),
+    ),
+    'public' => true,
+    'show_ui' => true,
+    'capability_type' => 'post',
+    'hierarchical' => false,
+    'rewrite' => get_sermon_permalink_base() ? array( 'slug' => get_sermon_permalink_base(), 'with_front' => true ) : false,
     'has_archive' => true,
-		'supports' => array('title', 'editor', 'author', 'custom-fields'),
-		'taxonomies' => array('sermon_series', 'sermon_service'),
-	);
-	register_post_type('sermon', $post_type_args);
+    'supports' => array('title', 'editor', 'author', 'custom-fields'),
+    'taxonomies' => array('sermon_series', 'sermon_service'),
+  );
+  register_post_type('sermon', $post_type_args);
 
 
   // allow sermons to have pings and enclosures
@@ -88,11 +88,11 @@ add_action('init', 'sermons_register_post_type');
  * Get the URL base for sermon permalinks.
  */
 function get_sermon_permalink_base() {
-	$base = get_option('sermon_base');
-	if ( empty($base) ) {
-		$base = 'sermons';
-	}
-	return $base;
+  $base = get_option('sermon_base');
+  if ( empty($base) ) {
+    $base = 'sermons';
+  }
+  return $base;
 }
 
 
@@ -144,7 +144,7 @@ function is_sermon_service( $service = '' ) {
  * @uses apply_filters() Calls 'sermons_default_bible_translation' on translation name
  */
 function sermons_default_bible_translation() {
-	return apply_filters('sermons_default_bible_translation', 'nkjv');
+  return apply_filters('sermons_default_bible_translation', 'nkjv');
 }
 
 
@@ -159,9 +159,9 @@ function sermons_default_bible_translation() {
  * @return string URL for the passage
  */
 function sermons_passage_url( $passage, $translation = null ) {
-	if ( !$translation ) $translation = sermons_default_bible_translation();
-	$url = 'http://www.biblegateway.com/passage/?version=' . urlencode($translation) . '&search=' . urlencode($passage);
-	return apply_filters('sermons_passage_url', $url, $passage, $translation);
+  if ( !$translation ) $translation = sermons_default_bible_translation();
+  $url = 'http://www.biblegateway.com/passage/?version=' . urlencode($translation) . '&search=' . urlencode($passage);
+  return apply_filters('sermons_passage_url', $url, $passage, $translation);
 }
 
 
@@ -176,9 +176,8 @@ function sermons_passage_url( $passage, $translation = null ) {
  * @return HTML link for the passage
  */
 function sermons_passage_link( $passage, $translation = null ) {
-	$url = sermons_passage_url($passage, $translation);
-	$link = '<a href="' . esc_url($url) . '" class="bible-link">' . esc_html($passage) . '</a>';
-	return apply_filters('sermons_passage_link', $link, $passage, $translation);
+  $url = sermons_passage_url($passage, $translation);
+  $link = '<a href="' . esc_url($url) . '" class="bible-link">' . esc_html($passage) . '</a>';
+  return apply_filters('sermons_passage_link', $link, $passage, $translation);
 }
 
-?>
