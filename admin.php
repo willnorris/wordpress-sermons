@@ -28,24 +28,14 @@ function sermons_permalink_form() {
     . '<input id="sermon_base" class="regular-text code" type="text" value="' . esc_attr($sermon_base) . '" name="sermon_base" />';
 }
 
+
 /**
  * Register meta boxes for the 'sermons' post type.
  */
 function sermons_add_meta_boxes() {
-  add_meta_box('sermon-audio', __('Sermon Audio', 'sermons'), 'sermons_audio_meta_box', 'sermon');
   add_meta_box('sermon-passage', __('Sermon Passage', 'sermons'), 'sermons_passage_meta_box', 'sermon');
 }
-//add_action('add_meta_boxes', 'sermons_add_meta_boxes');
-
-
-/**
- * Content of the 'sermon audio' meta box.
- */
-function sermons_audio_meta_box( $post ) {
-  $audio = get_post_meta( $post->ID, '_sermon_audio', true );
-  echo '<p>' . __('Enter the URL of the audio file for this sermon.', 'sermons') . '</p>
-  <input style="width:99%" type="text" name="sermon_audio" value="' . esc_attr( $audio ) . '" />';
-}
+add_action('add_meta_boxes', 'sermons_add_meta_boxes');
 
 
 /**
@@ -66,14 +56,8 @@ function sermons_save_post( $post_id, $post ) {
     return;
   }
 
-  wp_reset_vars( array('sermon_audio', 'sermon_passage') );
-  global $sermon_audio, $sermon_passage;
-
-  if ( empty($sermon_audio) ) {
-    delete_post_meta( $post_id, '_sermon_audio' );
-  } else {
-    update_post_meta( $post_id, '_sermon_audio', $sermon_audio );
-  }
+  wp_reset_vars( array('sermon_passage') );
+  global $sermon_passage;
 
   if ( empty($sermon_passage) ) {
     delete_post_meta( $post_id, '_sermon_passage' );
