@@ -62,7 +62,7 @@ function sermons_passage_meta_box( $post ) {
  * Save custom data.
  */
 function sermons_save_post( $post_id, $post ) {
-  if ( constant('DOING_AUTOSAVE') ) {
+  if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
     return;
   }
 
