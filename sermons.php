@@ -10,7 +10,7 @@
  Text Domain: sermons
 */
 
-require_once dirname(__FILE__) . '/admin.php'; 
+require_once dirname(__FILE__) . '/admin.php';
 
 /**
  * Register the 'sermon' post type as well as the supporting taxonomies 'Sermon Series' and 'Sermon Services'.
@@ -19,12 +19,12 @@ function sermons_register_post_type() {
 
   // make sure and register the taxonomies BEFORE the post type because the rewrite slugs overlap
 
-  $series_args = array( 
-    'hierarchical' => true, 
+  $series_args = array(
+    'hierarchical' => true,
     'labels' => array(
-      'name' => __('Sermon Series', 'sermons'), 
-      'singular_name' => __('Sermon Series', 'sermons'), 
-      'add_new_item' => __('Add New Sermon Series', 'sermons'), 
+      'name' => __('Sermon Series', 'sermons'),
+      'singular_name' => __('Sermon Series', 'sermons'),
+      'add_new_item' => __('Add New Sermon Series', 'sermons'),
       'edit_item' => __('Edit Sermon Series', 'sermons'),
       'new_item' => __('New Sermon Series', 'sermons'),
       'view_item' => __('View Sermon Series', 'sermons'),
@@ -32,16 +32,18 @@ function sermons_register_post_type() {
       'not_found' => __('No sermon series found', 'sermons'),
       'not_found_in_trash' => __('No sermon series found in Trash', 'sermons'),
     ),
-    'rewrite' => get_sermon_permalink_base() ? array( 'slug' => get_sermon_permalink_base() . '/series' ) : false,
+    'rewrite' => array(
+      'slug' => get_sermon_permalink_base() . '/series'
+    ),
   );
   register_taxonomy( 'sermon_series', '', $series_args );
 
-  $service_args = array( 
-    'hierarchical' => true, 
+  $service_args = array(
+    'hierarchical' => true,
     'labels' => array(
-      'name' => __('Sermon Services', 'sermons'), 
-      'singular_name' => __('Sermon Service', 'sermons'), 
-      'add_new_item' => __('Add New Service', 'sermons'), 
+      'name' => __('Sermon Services', 'sermons'),
+      'singular_name' => __('Sermon Service', 'sermons'),
+      'add_new_item' => __('Add New Service', 'sermons'),
       'edit_item' => __('Edit Service', 'sermons'),
       'new_item' => __('New Service', 'sermons'),
       'view_item' => __('View Service', 'sermons'),
@@ -49,7 +51,9 @@ function sermons_register_post_type() {
       'not_found' => __('No services found', 'sermons'),
       'not_found_in_trash' => __('No services found in Trash', 'sermons'),
     ),
-    'rewrite' => get_sermon_permalink_base() ? array( 'slug' => get_sermon_permalink_base() . '/service' ) : false,
+    'rewrite' => array(
+      'slug' => get_sermon_permalink_base() . '/service'
+    ),
   );
   register_taxonomy( 'sermon_service', '', $service_args );
 
@@ -70,9 +74,12 @@ function sermons_register_post_type() {
     'show_ui' => true,
     'capability_type' => 'post',
     'hierarchical' => false,
-    'rewrite' => get_sermon_permalink_base() ? array( 'slug' => get_sermon_permalink_base(), 'with_front' => true ) : false,
+    'rewrite' => array(
+      'slug' => get_sermon_permalink_base(),
+      'with_front' => true
+    ),
     'has_archive' => true,
-    'supports' => array('title', 'editor', 'author', 'custom-fields'),
+    'supports' => array('title', 'editor', 'author', 'thumbnail', 'excerpt', 'custom-fields'),
     'taxonomies' => array('sermon_series', 'sermon_service'),
   );
   register_post_type('sermon', $post_type_args);
@@ -82,6 +89,17 @@ function sermons_register_post_type() {
   add_action('publish_sermon', '_publish_post_hook', 5, 1);
 }
 add_action('init', 'sermons_register_post_type');
+
+
+/**
+ * Perform any post-activation tasks for the plugin such as flushing rewrite
+ * rules so that permalinks will work.
+ */
+function sermons_activation_hook() {
+  sermons_register_post_type();
+  flush_rewrite_rules();
+}
+register_activation_hook(__FILE__, 'sermons_activation_hook');
 
 
 /**
@@ -149,7 +167,7 @@ function sermons_default_bible_translation() {
 
 
 /**
- * Get the URL for the specified Biblical passage and translation.  By default, this function uses 
+ * Get the URL for the specified Biblical passage and translation.  By default, this function uses
  * Bible Gateway (biblegateway.com).
  *
  * @uses apply_filters() Calls 'sermons_passage_url' on passage URL
