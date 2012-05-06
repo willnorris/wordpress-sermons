@@ -34,6 +34,8 @@ function sermons_permalink_form() {
  */
 function sermons_add_meta_boxes() {
   add_meta_box('sermon-passage', __('Sermon Passage', 'sermons'), 'sermons_passage_meta_box', 'sermon');
+  add_meta_box('sermon-audio', __('Sermon Audio', 'sermons'), 'sermons_audio_meta_box', 'sermon');
+  add_meta_box('sermon-youtube', __('Sermon YouTube Video', 'sermons'), 'sermons_youtube_meta_box', 'sermon');
 }
 add_action('add_meta_boxes', 'sermons_add_meta_boxes');
 
@@ -49,6 +51,26 @@ function sermons_passage_meta_box( $post ) {
 
 
 /**
+ * Content of the 'sermon audio' meta box.
+ */
+function sermons_audio_meta_box( $post ) {
+  $passage = get_post_meta( $post->ID, '_sermon_audio', true );
+  echo '<p>' . __('Enter the URL of the audio file for this sermon.', 'sermons') . '</p>
+  <input style="width:99%" type="text" name="sermon_audio" value="' . esc_attr( $passage ) . '" />';
+}
+
+
+/**
+ * Content of the 'sermon youtube' meta box.
+ */
+function sermons_youtube_meta_box( $post ) {
+  $passage = get_post_meta( $post->ID, '_sermon_youtube_id', true );
+  echo '<p>' . __('Enter the YouTube video ID for this sermon. For example, <code>U6RfzbCxQqg</code>', 'sermons') . '</p>
+  <input style="width:99%" type="text" name="sermon_youtube_id" value="' . esc_attr( $passage ) . '" />';
+}
+
+
+/**
  * Save custom data.
  */
 function sermons_save_post( $post_id, $post ) {
@@ -56,14 +78,18 @@ function sermons_save_post( $post_id, $post ) {
     return;
   }
 
-  wp_reset_vars( array('sermon_passage') );
-  global $sermon_passage;
+  $sermon_meta_keys = array('sermon_passage', 'sermon_audio', 'sermon_youtube_id');
+  wp_reset_vars( $sermon_meta_keys );
 
-  if ( empty($sermon_passage) ) {
-    delete_post_meta( $post_id, '_sermon_passage' );
-  } else {
-    update_post_meta( $post_id, '_sermon_passage', $sermon_passage );
+  foreach ($sermon_meta_keys as $key) {
+    global $$key;
+    if ( empty($$key) ) {
+      delete_post_meta( $post_id, '_' . $key );
+    } else {
+      update_post_meta( $post_id, '_' . $key, $$key );
+    }
   }
+
 }
 add_action('save_post', 'sermons_save_post', 10, 2);
 
