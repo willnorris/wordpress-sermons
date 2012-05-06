@@ -24,6 +24,7 @@ function sermons_register_post_type() {
     'labels' => array(
       'name' => __('Sermon Series', 'sermons'),
       'singular_name' => __('Sermon Series', 'sermons'),
+      'all_items' => __('All Sermon Series', 'sermons'),
       'add_new_item' => __('Add New Sermon Series', 'sermons'),
       'edit_item' => __('Edit Sermon Series', 'sermons'),
       'new_item' => __('New Sermon Series', 'sermons'),
@@ -43,6 +44,7 @@ function sermons_register_post_type() {
     'labels' => array(
       'name' => __('Sermon Services', 'sermons'),
       'singular_name' => __('Sermon Service', 'sermons'),
+      'all_items' => __('All Sermon Services', 'sermons'),
       'add_new_item' => __('Add New Service', 'sermons'),
       'edit_item' => __('Edit Service', 'sermons'),
       'new_item' => __('New Service', 'sermons'),
@@ -62,6 +64,7 @@ function sermons_register_post_type() {
     'labels' => array(
       'name' => __('Sermons', 'sermons'),
       'singular_name' => __('Sermon', 'sermons'),
+      'all_items' => __('All Sermons', 'sermons'),
       'add_new_item' => __('Add New Sermon', 'sermons'),
       'edit_item' => __('Edit Sermon', 'sermons'),
       'new_item' => __('New Sermon', 'sermons'),
@@ -197,5 +200,70 @@ function sermons_passage_link( $passage, $translation = null ) {
   $url = sermons_passage_url($passage, $translation);
   $link = '<a href="' . esc_url($url) . '" class="bible-link">' . esc_html($passage) . '</a>';
   return apply_filters('sermons_passage_link', $link, $passage, $translation);
+}
+
+/**
+ * Get a list of sermon series, sorted in reverse chronological order by the 
+ * most recent sermon in each series.
+ *
+ * Note that, as currently implemented, this is potentially a terribly expensive call.
+ *
+ * @return array sermon series
+ */
+function get_active_sermon_series() {
+  // IDs of all sermon series that have at least one sermon
+  $series_ids = array_flip(get_terms('sermon_series', 'fields=ids'));
+
+  $active_series = array();
+  $sermons = get_posts('post_type=sermon&numberposts=');
+  foreach ($sermons as $sermon) {
+    $sermon_series = get_the_terms($sermon->ID, 'sermon_series');
+    foreach ($sermon_series as $series) {
+      if (array_key_exists($series->term_id, $series_ids)) {
+        $active_series[] = $series;
+        unset($series_ids[$series->term_id]);
+        if (empty($series_ids)) {
+          break 2;
+        }
+      }
+    }
+  }
+
+  return $active_series;
+}
+
+
+/**
+ * Get the ID of the thumbnail image for the specified sermon series.  The series thumbnail is 
+ * identified as a media attachment that has the name "sermon-series-{slug}" 
+ * which matches the slug of the sermon series.
+ */
+function get_sermon_series_thumbnail_id( $series_id = null ) {
+  if (!$series_id && is_sermon_series()) {
+    $series_id = get_queried_object_id();
+  }
+  $series = get_term($series_id, 'sermon_series');
+
+  if ($series) {
+    $attachments = get_posts('post_type=attachment&name=sermon-series-' . $series->slug);
+    if ($attachments) {
+      return $attachments[0]->ID;
+    }
+  }
+}
+
+function the_sermon_series_thumbnail( $size = 'post-thumbnail', $attr = '') {
+  echo get_the_sermon_series_thumbnail(null, $size, $attr);
+}
+
+function get_the_sermon_series_thumbnail( $series_id = null, $size = 'post-thumbnail', $attr = '' ) {
+  $thumbnail_id = get_sermon_series_thumbnail_id($series_id);
+  $size = apply_filters( 'sermon_series_thumbnail_size', $size );
+  if ( $thumbnail_id ) {
+    $html = wp_get_attachment_image( $thumbnail_id, $size, false, $attr );
+  } else {
+    $html = '';
+  }
+  return apply_filters( 'sermon_series_thumbnail_html', $html, $series_id, $thumbnail_id, $size, $attr );
 }
 
