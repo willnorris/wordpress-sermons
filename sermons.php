@@ -202,6 +202,49 @@ function sermons_passage_link( $passage, $translation = null ) {
   return apply_filters('sermons_passage_link', $link, $passage, $translation);
 }
 
+
+/**
+ * Get the URL for the audio file of the specified sermon.
+ *
+ * @param int|object $post Sermon ID or object.
+ * @return string audio URL for the sermon, if one exists
+ */
+function get_sermon_audio_url( $sermon = '' ) {
+  $post = get_post($sermon);
+  if ( $post ) {
+    return get_post_meta($post->ID, '_sermon_audio', true);
+  }
+}
+
+
+/**
+ * Get a YouTube URL for a sermon.
+ *
+ * @param int|object $post Sermon ID or object.
+ * @param string $type YouTube URL type to get.  Supported values are: url, iframe, embed, short.
+ * @return string YouTube URL for the sermon, if one exists
+ */
+function get_sermon_youtube_url( $sermon = '', $type = 'url' ) {
+  $post = get_post($sermon);
+  if ( $post ) {
+    $id = get_post_meta($post->ID, '_sermon_youtube_id', true);
+    if ( $id ) {
+      switch ( $type ) {
+        case 'iframe':
+          return 'https://www.youtube.com/embed/' . $id;
+        case 'embed':
+          return 'https://www.youtube.com/v/' . $id;
+        case 'short':
+          return 'https://youtu.be/' . $id;
+        case 'url':
+        default:
+          return 'https://www.youtube.com/watch?v=' . $id;
+      }
+    }
+  }
+}
+
+
 /**
  * Get a list of sermon series, sorted in reverse chronological order by the 
  * most recent sermon in each series.
@@ -252,9 +295,11 @@ function get_sermon_series_thumbnail_id( $series_id = null ) {
   }
 }
 
+
 function the_sermon_series_thumbnail( $size = 'post-thumbnail', $attr = '') {
   echo get_the_sermon_series_thumbnail(null, $size, $attr);
 }
+
 
 function get_the_sermon_series_thumbnail( $series_id = null, $size = 'post-thumbnail', $attr = '' ) {
   $thumbnail_id = get_sermon_series_thumbnail_id($series_id);
@@ -266,4 +311,30 @@ function get_the_sermon_series_thumbnail( $series_id = null, $size = 'post-thumb
   }
   return apply_filters( 'sermon_series_thumbnail_html', $html, $series_id, $thumbnail_id, $size, $attr );
 }
+
+
+/**
+ * Add appropriate metadata if the opengraph plugin is installed.
+ *
+ * @see http://wordpress.org/extend/plugins/opengraph/
+ */
+function sermon_opengraph_metadata( $metadata ) {
+  if ( is_sermon() ) {
+    $metadata['og:type'] = 'article';
+
+    $audio_url = get_sermon_audio_url();
+    if ( $audio_url ) {
+      $metadata['og:audio'] = $audio_url;
+    }
+
+    $youtube_url = get_sermon_youtube_url('', 'embed');
+    if ( $youtube_url ) {
+      $metadata['og:video'] = $youtube_url;
+      $metadata['og:video:type'] = 'application/x-shockwave-flash';
+    }
+  }
+
+  return $metadata;
+}
+add_filter('opengraph_metadata', 'sermon_opengraph_metadata');
 
