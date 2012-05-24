@@ -249,26 +249,33 @@ function get_sermon_youtube_url( $sermon = '', $type = 'url' ) {
  * Get a list of sermon series, sorted in reverse chronological order by the 
  * most recent sermon in each series.
  *
- * Note that, as currently implemented, this is potentially a terribly expensive call.
- *
  * @return array sermon series
  */
 function get_active_sermon_series() {
-  // IDs of all sermon series that have at least one sermon
-  $series_ids = array_flip(get_terms('sermon_series', 'fields=ids'));
+  $active_series = wp_cache_get('active_series', 'sermons');
 
-  $active_series = array();
-  $sermons = get_posts('post_type=sermon&numberposts=');
-  foreach ($sermons as $sermon) {
-    $sermon_series = get_the_terms($sermon->ID, 'sermon_series');
-    foreach ($sermon_series as $series) {
-      if (array_key_exists($series->term_id, $series_ids)) {
-        $active_series[] = $series;
-        unset($series_ids[$series->term_id]);
-        if (empty($series_ids)) {
-          break 2;
+  if ( !$active_series ) {
+    $active_series = array();
+
+    // IDs of all sermon series that have at least one sermon
+    $series_ids = array_flip(get_terms('sermon_series', 'fields=ids'));
+
+    $sermon_ids = get_posts('post_type=sermon&fields=ids&numberposts=');
+    foreach ($sermon_ids as $sermon_id) {
+      $sermon_series = get_the_terms($sermon_id, 'sermon_series');
+      foreach ($sermon_series as $series) {
+        if (array_key_exists($series->term_id, $series_ids)) {
+          $active_series[] = $series;
+          unset($series_ids[$series->term_id]);
+          if (empty($series_ids)) {
+            break 2;
+          }
         }
       }
+    }
+
+    if ( $active_series ) {
+      wp_cache_set('active_series', $active_series, 'sermons');
     }
   }
 
