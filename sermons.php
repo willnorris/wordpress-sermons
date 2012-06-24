@@ -284,6 +284,27 @@ function get_active_sermon_series() {
 
 
 /**
+ * Get the IDs of the sermons in the specified series.
+ */
+function get_sermon_ids_in_series( $series_id ) {
+  return get_objects_in_term($series_id, 'sermon_series');
+}
+
+
+function get_primary_sermon_series( $sermon_id = '' ) {
+  if ( !$sermon_id && is_sermon() ) {
+    $sermon_id = get_queried_object_id();
+  }
+  if ( $sermon_id ) {
+    $sermon_series = get_the_terms($sermon_id, 'sermon_series');
+    if ( $sermon_series ) {
+      return array_shift($sermon_series);
+    }
+  }
+}
+
+
+/**
  * Get the ID of the thumbnail image for the specified sermon series.  The series thumbnail is 
  * identified as a media attachment that has the name "sermon-series-{slug}" 
  * which matches the slug of the sermon series.
