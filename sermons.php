@@ -260,7 +260,7 @@ function get_active_sermon_series() {
     // IDs of all sermon series that have at least one sermon
     $series_ids = array_flip(get_terms('sermon_series', 'fields=ids'));
 
-    $sermon_ids = get_posts('post_type=sermon&fields=ids&numberposts=');
+    $sermon_ids = get_posts('post_type=sermon&fields=ids&numberposts=-1');
     foreach ($sermon_ids as $sermon_id) {
       $sermon_series = get_the_terms($sermon_id, 'sermon_series');
       foreach ($sermon_series as $series) {
