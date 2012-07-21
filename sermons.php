@@ -252,7 +252,7 @@ function get_sermon_youtube_url( $sermon = '', $type = 'url' ) {
  * @return array sermon series
  */
 function get_active_sermon_series() {
-  $active_series = wp_cache_get('active_series', 'sermons');
+  $active_series = get_transient('active_sermon_series');
 
   if ( !$active_series ) {
     $active_series = array();
@@ -275,7 +275,8 @@ function get_active_sermon_series() {
     }
 
     if ( $active_series ) {
-      wp_cache_set('active_series', $active_series, 'sermons');
+      // TODO: manually update or delete transient when sermons are modified
+      set_transient('active_sermon_series', $active_series, 60 * 60);
     }
   }
 
