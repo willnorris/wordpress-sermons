@@ -263,25 +263,51 @@ function get_active_sermon_series() {
     $sermon_ids = get_posts('post_type=sermon&fields=ids&numberposts=-1');
     foreach ($sermon_ids as $sermon_id) {
       $sermon_series = get_the_terms($sermon_id, 'sermon_series');
-      foreach ($sermon_series as $series) {
-        if (array_key_exists($series->term_id, $series_ids)) {
-          $active_series[] = $series;
-          unset($series_ids[$series->term_id]);
-          if (empty($series_ids)) {
-            break 2;
+      if ( $sermon_series) {
+        foreach ($sermon_series as $series) {
+          if (array_key_exists($series->term_id, $series_ids)) {
+            $active_series[] = $series;
+            unset($series_ids[$series->term_id]);
+            if (empty($series_ids)) {
+              break 2;
+            }
           }
         }
       }
     }
 
     if ( $active_series ) {
-      // TODO: manually update or delete transient when sermons are modified
       set_transient('active_sermon_series', $active_series, 60 * 60);
     }
   }
 
   return $active_series;
 }
+
+
+/**
+ * Invalidate cached 'active_sermon_series' when a sermon is modified.
+ */
+function post_sermon_modified($id) {
+  if ( get_post_type($id) == 'sermon' ) {
+    delete_transient('active_sermon_series');
+  }
+}
+add_action('wp_insert_post', 'post_sermon_modified');
+add_action('after_delete_post', 'post_sermon_modified');
+
+
+/**
+ * Invalidate cached 'active_sermon_series' when a sermon taxonomy is modified.
+ */
+function post_sermon_taxonomy_modified($term_id, $tt_id, $taxonomy) {
+  if ( $taxonomy == 'sermon_series' ) {
+    delete_transient('active_sermon_series');
+  }
+}
+add_action('created_term', 'post_sermon_taxonomy_modified', 10, 3);
+add_action('edited_term', 'post_sermon_taxonomy_modified', 10, 3);
+add_action('delete_term', 'post_sermon_taxonomy_modified', 10, 3);
 
 
 /**
