@@ -337,6 +337,8 @@ function get_primary_sermon_series( $sermon_id = '' ) {
  * which matches the slug of the sermon series.
  */
 function get_sermon_series_thumbnail_id( $series_id = null ) {
+  $thumbnail_id = null;
+
   if (!$series_id && is_sermon_series()) {
     $series_id = get_queried_object_id();
   }
@@ -345,9 +347,11 @@ function get_sermon_series_thumbnail_id( $series_id = null ) {
   if ($series) {
     $attachments = get_posts('post_type=attachment&name=sermon-series-' . $series->slug);
     if ($attachments) {
-      return $attachments[0]->ID;
+      $thumbnail_id = $attachments[0]->ID;
     }
   }
+
+  return apply_filters('sermon_series_thumbnail_id', $thumbnail_id, $series_id);
 }
 
 
