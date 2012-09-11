@@ -397,3 +397,38 @@ function sermon_opengraph_metadata( $metadata ) {
 }
 add_filter('opengraph_metadata', 'sermon_opengraph_metadata');
 
+
+/**
+ * The base type to use for sermon URLs shortened by the hum plugin.
+ *
+ * @see http://wordpress.org/extend/plugins/hum/
+ */
+function sermon_hum_base_type() {
+  return apply_filters('sermon_hum_base_type', 's');
+}
+
+
+/**
+ * Add the sermon base type as a local type handled by hum.
+ *
+ * @see http://wordpress.org/extend/plugins/hum/
+ */
+function sermon_hum_local_types($types) {
+  $types[] = sermon_hum_base_type();
+  return $types;
+}
+add_filter('hum_local_types', 'sermon_hum_local_types');
+
+
+/**
+ * Use the sermon base type for shortened sermon URLs.
+ *
+ * @see http://wordpress.org/extend/plugins/hum/
+ */
+function sermon_hum_type_prefix($prefix, $post) {
+  if ( get_post_type($post) == 'sermon' ) {
+    $prefix = sermon_hum_base_type();
+  }
+  return $prefix;
+}
+add_filter('hum_type_prefix', 'sermon_hum_type_prefix', 10, 2);
