@@ -33,40 +33,26 @@ function sermons_permalink_form() {
  * Register meta boxes for the 'sermons' post type.
  */
 function sermons_add_meta_boxes() {
-  add_meta_box('sermon-passage', __('Sermon Passage', 'sermons'), 'sermons_passage_meta_box', 'sermon');
-  add_meta_box('sermon-audio', __('Sermon Audio', 'sermons'), 'sermons_audio_meta_box', 'sermon');
-  add_meta_box('sermon-youtube', __('Sermon YouTube Video', 'sermons'), 'sermons_youtube_meta_box', 'sermon');
+  add_meta_box('sermon-data', __('Sermon Data', 'sermons'), 'sermons_data_meta_box', 'sermon');
 }
 add_action('add_meta_boxes', 'sermons_add_meta_boxes');
 
 
 /**
- * Content of the 'sermon passage' meta box.
+ * Content of the 'sermon data' meta box.
  */
-function sermons_passage_meta_box( $post ) {
+function sermons_data_meta_box( $post ) {
   $passage = get_post_meta( $post->ID, '_sermon_passage', true );
   echo '<p>' . __('Enter the primary Bible passage(s) for this sermon.', 'sermons') . '</p>
   <input style="width:99%" type="text" name="sermon_passage" value="' . esc_attr( $passage ) . '" />';
-}
 
-
-/**
- * Content of the 'sermon audio' meta box.
- */
-function sermons_audio_meta_box( $post ) {
-  $passage = get_post_meta( $post->ID, '_sermon_audio', true );
+  $audio = get_post_meta( $post->ID, '_sermon_audio', true );
   echo '<p>' . __('Enter the URL of the audio file for this sermon.', 'sermons') . '</p>
-  <input style="width:99%" type="text" name="sermon_audio" value="' . esc_attr( $passage ) . '" />';
-}
+  <input style="width:99%" type="text" name="sermon_audio" value="' . esc_attr( $audio ) . '" />';
 
-
-/**
- * Content of the 'sermon youtube' meta box.
- */
-function sermons_youtube_meta_box( $post ) {
-  $passage = get_post_meta( $post->ID, '_sermon_youtube_id', true );
+  $video = get_post_meta( $post->ID, '_sermon_youtube_id', true );
   echo '<p>' . __('Enter the YouTube video ID for this sermon. For example, <code>U6RfzbCxQqg</code>', 'sermons') . '</p>
-  <input style="width:99%" type="text" name="sermon_youtube_id" value="' . esc_attr( $passage ) . '" />';
+  <input style="width:99%" type="text" name="sermon_youtube_id" value="' . esc_attr( $video ) . '" />';
 }
 
 
