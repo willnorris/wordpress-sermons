@@ -19,8 +19,8 @@ function sermons_register_post_type() {
 
   // make sure and register the taxonomies BEFORE the post type because the rewrite slugs overlap
 
-  $series_args = array(
-    'hierarchical' => true,
+  // sermon series custom post type
+  $series_post_type = array(
     'labels' => array(
       'name' => __('Sermon Series', 'sermons'),
       'singular_name' => __('Sermon Series', 'sermons'),
@@ -33,34 +33,50 @@ function sermons_register_post_type() {
       'not_found' => __('No sermon series found', 'sermons'),
       'not_found_in_trash' => __('No sermon series found in Trash', 'sermons'),
     ),
+    'public' => true,
+    'show_ui' => true,
+    'capability_type' => 'post',
+    'hierarchical' => false,
     'rewrite' => array(
-      'slug' => get_sermon_permalink_base() . '/series'
+      'slug' => get_sermon_series_permalink_base(),
+      'with_front' => true
     ),
+    'has_archive' => true,
+    'supports' => array('title', 'editor', 'author', 'thumbnail', 'excerpt', 'custom-fields'),
+    'show_in_menu' => false,
   );
-  register_taxonomy( 'sermon_series', '', $series_args );
+  register_post_type('sermon_series', $series_post_type);
 
-  $service_args = array(
-    'hierarchical' => true,
+  // sermon series custom post type
+  $speaker_post_type = array(
     'labels' => array(
-      'name' => __('Sermon Services', 'sermons'),
-      'singular_name' => __('Sermon Service', 'sermons'),
-      'all_items' => __('All Sermon Services', 'sermons'),
-      'add_new_item' => __('Add New Service', 'sermons'),
-      'edit_item' => __('Edit Service', 'sermons'),
-      'new_item' => __('New Service', 'sermons'),
-      'view_item' => __('View Service', 'sermons'),
-      'search_items' => __('Search Services', 'sermons'),
-      'not_found' => __('No services found', 'sermons'),
-      'not_found_in_trash' => __('No services found in Trash', 'sermons'),
+      'name' => __('Sermon Speakers', 'sermons'),
+      'singular_name' => __('Speaker', 'sermons'),
+      'all_items' => __('All Speakers', 'sermons'),
+      'add_new_item' => __('Add New Speaker', 'sermons'),
+      'edit_item' => __('Edit Speaker', 'sermons'),
+      'new_item' => __('New Speaker', 'sermons'),
+      'view_item' => __('View Speaker', 'sermons'),
+      'search_items' => __('Search Speakers', 'sermons'),
+      'not_found' => __('No speakers found', 'sermons'),
+      'not_found_in_trash' => __('No speakers found in Trash', 'sermons'),
     ),
+    'public' => true,
+    'show_ui' => true,
+    'capability_type' => 'post',
+    'hierarchical' => false,
     'rewrite' => array(
-      'slug' => get_sermon_permalink_base() . '/service'
+      'slug' => get_sermon_speaker_permalink_base(),
+      'with_front' => true
     ),
+    'has_archive' => true,
+    'supports' => array('title', 'editor', 'author', 'thumbnail', 'excerpt', 'custom-fields'),
+    'show_in_menu' => false,
   );
-  register_taxonomy( 'sermon_service', '', $service_args );
+  register_post_type('sermon_speaker', $speaker_post_type);
 
-  // setup custom post type
-  $post_type_args = array(
+  // sermon custom post type
+  $sermon_post_type = array(
     'labels' => array(
       'name' => __('Sermons', 'sermons'),
       'singular_name' => __('Sermon', 'sermons'),
@@ -83,15 +99,62 @@ function sermons_register_post_type() {
     ),
     'has_archive' => true,
     'supports' => array('title', 'editor', 'author', 'thumbnail', 'excerpt', 'custom-fields'),
-    'taxonomies' => array('sermon_series', 'sermon_service'),
   );
-  register_post_type('sermon', $post_type_args);
-
+  register_post_type('sermon', $sermon_post_type);
 
   // allow sermons to have pings and enclosures
   add_action('publish_sermon', '_publish_post_hook', 5, 1);
 }
 add_action('init', 'sermons_register_post_type');
+
+
+/**
+ * Add sermon series and speakers as submenus under Sermons.
+ */
+function sermons_admin_menu() {
+  foreach ( get_post_types() as $ptype ) {
+    if ( strpos($ptype, "sermon_") !== 0 ) {
+      continue;
+    }
+    $ptype_obj = get_post_type_object( $ptype );
+    add_submenu_page( 'edit.php?post_type=sermon', $ptype_obj->labels->name, $ptype_obj->labels->name, $ptype_obj->cap->edit_posts, "edit.php?post_type=$ptype" );
+  }
+}
+add_action('admin_menu', 'sermons_admin_menu');
+
+
+/**
+ * Register post-to-post connection for sermons.
+ */
+function sermons_p2p_connections() {
+  p2p_register_connection_type( array(
+    'name' => 'sermons_to_series',
+    'from' => 'sermon',
+    'to' => 'sermon_series',
+    'cardinality' => 'many-to-one',
+    'admin_box' => array(
+      'show' => 'from',
+      'context' => 'side',
+    ),
+    'to_labels' => array(
+      'create' => __('Add Sermon Series', 'sermons'),
+    ),
+  ) );
+
+  p2p_register_connection_type( array(
+    'name' => 'sermons_to_speakers',
+    'from' => 'sermon',
+    'to' => 'sermon_speaker',
+    'admin_box' => array(
+      'show' => 'from',
+      'context' => 'side',
+    ),
+    'to_labels' => array(
+      'create' => __('Add Speaker', 'sermons'),
+    ),
+  ) );
+}
+add_action('p2p_init', 'sermons_p2p_connections');
 
 
 /**
@@ -112,6 +175,30 @@ function get_sermon_permalink_base() {
   $base = get_option('sermon_base');
   if ( empty($base) ) {
     $base = 'sermons';
+  }
+  return $base;
+}
+
+
+/**
+ * Get the URL base for sermon series permalinks.
+ */
+function get_sermon_series_permalink_base() {
+  $base = get_option('sermon_series_base');
+  if ( empty($base) ) {
+    $base = 'sermons/series';
+  }
+  return $base;
+}
+
+
+/**
+ * Get the URL base for speakers.
+ */
+function get_sermon_speaker_permalink_base() {
+  $base = get_option('sermon_speaker_base');
+  if ( empty($base) ) {
+    $base = 'sermons/speakers';
   }
   return $base;
 }
@@ -141,21 +228,7 @@ function is_sermon( $sermon = '' ) {
  * @return bool
  */
 function is_sermon_series( $series = '' ) {
-  return is_tax( 'sermon_series', $series );
-}
-
-
-/**
- * Is the query for a specific sermon service?
- *
- * If the $service parameter is specified, this function will additionally
- * check if the query is for one of the service specified.
- *
- * @param mixed $service Service ID, title, slug, or array of Service IDs, titles, and slugs.
- * @return bool
- */
-function is_sermon_service( $service = '' ) {
-  return is_tax( 'sermon_service', $service );
+  return is_singular( 'sermon_series' ) && is_single( $series );
 }
 
 
@@ -246,7 +319,7 @@ function get_sermon_youtube_url( $sermon = '', $type = 'url' ) {
 
 
 /**
- * Get a list of sermon series, sorted in reverse chronological order by the 
+ * Get a list of sermon series, sorted in reverse chronological order by the
  * most recent sermon in each series.
  *
  * @return array sermon series
@@ -258,9 +331,30 @@ function get_active_sermon_series() {
     $active_series = array();
 
     // IDs of all sermon series that have at least one sermon
-    $series_ids = array_flip(get_terms('sermon_series', 'fields=ids'));
+    //$series_ids = array_flip(get_terms('sermon_series', 'fields=ids'));
+    $series_ids = array();
+    $all_series = new WP_Query( array(
+      'connected_type' => 'sermons_to_series',
+      'connected_items' => $sermons->posts,
+      'connected_direction' => 'any',
+      'fields' => 'id',
+      //'nopaging' => true,
+    ) );
+    foreach ($all_series->posts as $s) {
+      $series_ids[] = $s->ID;
+    }
 
-    $sermon_ids = get_posts('post_type=sermon&fields=ids&numberposts=-1');
+
+    $sermons = new WP_Query( array(
+      'post_type' => 'sermon',
+      'fields' => 'id',
+      'numberposts' => -1,
+      'posts_per_page' => -1,
+    ) );
+
+    print '<pre>' . print_r($all_series, true) . '</pre>';
+
+    /*
     foreach ($sermon_ids as $sermon_id) {
       $sermon_series = get_the_terms($sermon_id, 'sermon_series');
       if ( $sermon_series) {
@@ -279,7 +373,10 @@ function get_active_sermon_series() {
     if ( $active_series ) {
       set_transient('active_sermon_series', $active_series, 60 * 60);
     }
+    */
   }
+
+  print "foo";
 
   return $active_series;
 }
@@ -319,6 +416,7 @@ function get_sermon_ids_in_series( $series_id ) {
 
 
 function get_primary_sermon_series( $sermon_id = '' ) {
+  /*
   if ( !$sermon_id && is_sermon() ) {
     $sermon_id = get_queried_object_id();
   }
@@ -328,15 +426,17 @@ function get_primary_sermon_series( $sermon_id = '' ) {
       return array_shift($sermon_series);
     }
   }
+   */
 }
 
 
 /**
- * Get the ID of the thumbnail image for the specified sermon series.  The series thumbnail is 
- * identified as a media attachment that has the name "sermon-series-{slug}" 
+ * Get the ID of the thumbnail image for the specified sermon series.  The series thumbnail is
+ * identified as a media attachment that has the name "sermon-series-{slug}"
  * which matches the slug of the sermon series.
  */
 function get_sermon_series_thumbnail_id( $series_id = null ) {
+  /*
   $thumbnail_id = null;
 
   if (!$series_id && is_sermon_series()) {
@@ -352,6 +452,7 @@ function get_sermon_series_thumbnail_id( $series_id = null ) {
   }
 
   return apply_filters('sermon_series_thumbnail_id', $thumbnail_id, $series_id);
+  */
 }
 
 
