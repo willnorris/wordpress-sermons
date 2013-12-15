@@ -6,6 +6,8 @@
 function sermons_admin_init() {
   register_setting('permalink', 'sermon_base');
   add_settings_field('sermon_base', __('Sermon base', 'sermons'), 'sermons_permalink_form', 'permalink', 'optional');
+  add_settings_field('sermon_series_base', __('Sermon Series base', 'sermons'), 'sermons_series_permalink_form', 'permalink', 'optional');
+  add_settings_field('sermon_speaker_base', __('Sermon Speaker base', 'sermons'), 'sermons_speaker_permalink_form', 'permalink', 'optional');
 }
 add_action('admin_init', 'sermons_admin_init');
 
@@ -22,10 +24,43 @@ function sermons_permalink_form() {
     flush_rewrite_rules();
   }
 
-  $sermon_base = get_option('sermon_base');
+  $base = get_option('sermon_base');
 
   echo $blog_prefix
-    . '<input id="sermon_base" class="regular-text code" type="text" value="' . esc_attr($sermon_base) . '" name="sermon_base" />';
+    . '<input id="sermon_base" class="regular-text code" type="text" value="' . esc_attr($base) . '" name="sermon_base" />'
+    . '<p class="description">Default: <code>sermons</code></p>';
+}
+
+function sermons_series_permalink_form() {
+  global $blog_prefix;
+
+  if ( isset($_POST['sermon_series_base']) ) {
+    check_admin_referer('update-permalink');
+    update_option('sermon_series_base', trim($_POST['sermon_series_base']));
+    flush_rewrite_rules();
+  }
+
+  $base = get_option('sermon_series_base');
+
+  echo $blog_prefix
+    . '<input id="sermon_series_base" class="regular-text code" type="text" value="' . esc_attr($base) . '" name="sermon_series_base" />'
+  . '<p class="description">Default: <code>sermons/series</code></p>';
+}
+
+function sermons_speaker_permalink_form() {
+  global $blog_prefix;
+
+  if ( isset($_POST['sermon_speaker_base']) ) {
+    check_admin_referer('update-permalink');
+    update_option('sermon_speaker_base', trim($_POST['sermon_speaker_base']));
+    flush_rewrite_rules();
+  }
+
+  $base = get_option('sermon_speaker_base');
+
+  echo $blog_prefix
+    . '<input id="sermon_speaker_base" class="regular-text code" type="text" value="' . esc_attr($base) . '" name="sermon_speaker_base" />'
+  . '<p class="description">Default: <code>sermons/speakers</code></p>';
 }
 
 

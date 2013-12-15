@@ -332,27 +332,30 @@ function get_active_sermon_series() {
 
     // IDs of all sermon series that have at least one sermon
     //$series_ids = array_flip(get_terms('sermon_series', 'fields=ids'));
-    $series_ids = array();
     $all_series = new WP_Query( array(
       'connected_type' => 'sermons_to_series',
-      'connected_items' => $sermons->posts,
+      //'connected_items' => $sermons->posts,
       'connected_direction' => 'any',
       'fields' => 'id',
-      //'nopaging' => true,
+      'numberposts' => -1,
+      'posts_per_page' => -1,
     ) );
+
+    $series_ids = array();
     foreach ($all_series->posts as $s) {
       $series_ids[] = $s->ID;
     }
 
 
     $sermons = new WP_Query( array(
-      'post_type' => 'sermon',
+      'connected_type' => 'sermons_to_series',
+      'connected_direction' => 'to',
       'fields' => 'id',
       'numberposts' => -1,
       'posts_per_page' => -1,
     ) );
 
-    print '<pre>' . print_r($all_series, true) . '</pre>';
+    print '<pre>' . print_r($sermons, true) . '</pre>';
 
     /*
     foreach ($sermon_ids as $sermon_id) {
@@ -369,14 +372,12 @@ function get_active_sermon_series() {
         }
       }
     }
+    */
 
     if ( $active_series ) {
       set_transient('active_sermon_series', $active_series, 60 * 60);
     }
-    */
   }
-
-  print "foo";
 
   return $active_series;
 }
