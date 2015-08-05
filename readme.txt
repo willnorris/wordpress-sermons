@@ -3,6 +3,8 @@ Contributors: willnorris
 Tags: sermons
 Requires at least: 3.2
 Tested up to: 3.2
+License: Apache 2.0
+License URI: https://www.apache.org/licenses/LICENSE-2.0
 
 Adds support for managing sermons in WordPress.
 
